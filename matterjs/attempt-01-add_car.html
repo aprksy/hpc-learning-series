@@ -1,0 +1,168 @@
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+        <script src="./scripts/matter.min.js"></script>
+    </head>
+    <body>
+        <button id="activate">Move/Stay</button>
+        <button id="run">Run/Stop</button>
+        <button id="reset">Reset</button>
+        <br>
+        <script>
+
+var car = function(xx, yy, width, height, wheelSize) {
+    var Body = Matter.Body,
+        Bodies = Matter.Bodies,
+        Composite = Matter.Composite,
+        Constraint = Matter.Constraint;
+
+    var group = Body.nextGroup(true),
+        wheelBase = 20,
+        wheelAOffset = -width * 0.5 + wheelBase,
+        wheelBOffset = width * 0.5 - wheelBase,
+        wheelYOffset = 0;
+
+    var car = Composite.create({ label: 'Car' }),
+        body = Bodies.rectangle(xx, yy, width, height, { 
+            collisionFilter: {
+                group: group
+            },
+            // chamfer: {
+            //     radius: height * 0.5
+            // },
+            density: 0.01 //0.0002
+        });
+
+    var wheelA = Bodies.circle(xx + wheelAOffset, yy + wheelYOffset, wheelSize, { 
+        collisionFilter: {
+            group: group
+        },
+        friction: 0.8
+    });
+                
+    var wheelB = Bodies.circle(xx + wheelBOffset, yy + wheelYOffset, wheelSize, { 
+        collisionFilter: {
+            group: group
+        },
+        friction: 0.8
+    });
+                
+    var axelA = Constraint.create({
+        bodyB: body,
+        pointB: { x: wheelAOffset, y: wheelYOffset },
+        bodyA: wheelA,
+        stiffness: 0.5,
+        length: 0
+    });
+                    
+    var axelB = Constraint.create({
+        bodyB: body,
+        pointB: { x: wheelBOffset, y: wheelYOffset },
+        bodyA: wheelB,
+        stiffness: 0.2,
+        length: 0
+    });
+    
+    Composite.addBody(car, body);
+    Composite.addBody(car, wheelA);
+    Composite.addBody(car, wheelB);
+    Composite.addConstraint(car, axelA);
+    Composite.addConstraint(car, axelB);
+
+    return car;
+};
+
+// module aliases
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    Runner = Matter.Runner,
+    Bodies = Matter.Bodies,
+    Body = Matter.Body,
+    Composite = Matter.Composite;
+
+// create an engine
+var engine = Engine.create();
+
+// create a renderer
+var render = Render.create({
+    element: document.body,
+    engine: engine,
+    options: {
+        width: 1280,
+        height: 720
+    },
+}); 
+
+// create two boxes and a ground
+var boxA;
+var boxB;
+var carA;
+var ball;
+var ground;
+
+reset();
+
+// add all of the bodies to the world
+// Composite.add(engine.world, [boxA, boxB, carA, /*ball,*/ ground]);
+
+// run the renderer
+Render.run(render);
+
+// create runner
+var runner = Runner.create();
+
+// run the engine
+Runner.run(runner, engine);
+
+var subTimeStamp = 0;
+var update = false;
+var run = true;
+
+function reset() {
+    boxA = Bodies.rectangle(1000, 200, 80, 80);
+    boxB = Bodies.rectangle(450, 50, 80, 80);
+    carA = car(1000, 580, 240, 30, 40);
+    ball = Bodies.circle(90, 280, 20);
+    ground = Bodies.rectangle(640, 680, 1290, 120, { isStatic: true });
+    
+    // Clear the world
+    Composite.clear(engine.world, false);
+
+    // Add all of the bodies back to the world
+    Composite.add(engine.world, [boxA, boxB, carA, /*ball,*/ ground]);
+}
+
+$('#activate').on('click', function(){
+    update = !update;
+    if (update) {
+        Matter.Events.on(engine, 'beforeUpdate', function(event) {
+            // console.log(subTimeStamp)
+            subTimeStamp++;
+            let velocity = 4 * (1 + Math.cos(subTimeStamp / 50))
+            Body.setVelocity(carA.bodies[0], {x:-velocity, y:0.0});
+            // Body.applyForce( carA.bodies[0], 
+            //     {x: carA.bodies[0].position.x, y: carA.bodies[0].position.y}, 
+            //     {x: -0.01, y: 0.0});
+        });
+    } else {
+        Matter.Events.off(engine, 'beforeUpdate');
+    }
+})
+
+$('#run').on('click', function(){
+    run = !run;
+    
+    if (run) {
+        Runner.run(runner, engine);
+    } else {
+        Runner.stop(runner);
+    }
+});
+
+$('#reset').on('click', function(){
+    reset();
+});
+
+        </script>
+    </body>
+</html>
