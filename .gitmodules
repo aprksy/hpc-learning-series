@@ -1,0 +1,12 @@
+[submodule "olcf/foundational_hpc_skills"]
+	path = olcf/foundational_hpc_skills
+	url = github:aprksy/foundational_hpc_skills
+[submodule "NERSC/openmp-series-2024"]
+	path = NERSC/openmp-series-2024
+	url = https://github.com/aprksy/openmp-series-2024
+[submodule "ORNL/julia-basics"]
+	path = ORNL/julia-basics
+	url = https://github.com/ornl-training/julia-basics
+[submodule "ORNL/GrayScott.jl"]
+	path = ORNL/GrayScott.jl
+	url = https://github.com/JuliaORNL/GrayScott.jl
